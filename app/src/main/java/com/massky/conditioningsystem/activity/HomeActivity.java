@@ -19,7 +19,11 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
 import com.andview.refreshview.XRefreshView;
+import com.crazysunj.data.repository.weather.WeatherDataRepository;
+import com.crazysunj.domain.entity.repository.weather.WeatherRepository;
+import com.crazysunj.domain.interactor.weather.WeatherUseCase;
 import com.massky.conditioningsystem.R;
 import com.massky.conditioningsystem.Util.DialogUtil;
 import com.massky.conditioningsystem.Util.ListViewForScrollView_New;
@@ -38,6 +42,7 @@ import com.massky.conditioningsystem.sql.SqlHelper;
 import com.massky.conditioningsystem.view.ClearEditText;
 import com.massky.conditioningsystem.view.CommomDialog;
 import com.massky.conditioningsystem.view.SceneDialog;
+import com.ui.adapter.HomeAdapter;
 import com.yanzhenjie.statusview.StatusUtils;
 import com.yanzhenjie.statusview.StatusView;
 import java.util.ArrayList;
@@ -46,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import javax.inject.Inject;
 import butterknife.InjectView;
 
 /**
@@ -92,6 +98,11 @@ public class HomeActivity extends BaseActivity<HomePresenter> implements Adapter
     private View view_long_click;
     private int item_click_position;
     private String fuzzy_query = "";
+    @Inject
+    HomeAdapter mAdapter;
+    @Inject
+    WeatherUseCase weatherUseCase;
+
 
     @Override
     protected int viewId() {

@@ -15,7 +15,11 @@
  */
 package com.massky.conditioningsystem.di.module;
 
+import com.crazysunj.domain.entity.common.CommonHeaderEntity;
+import com.crazysunj.domain.entity.zhihu.ZhihuNewsEntity;
 import com.massky.conditioningsystem.sql.CommonBean;
+import com.ui.adapter.helper.HomeAdapterHelper;
+
 import javax.inject.Named;
 import dagger.Module;
 import dagger.Provides;
@@ -33,6 +37,8 @@ public class EntityModule {
     public static final String NAME_COMMONBEAN_SCENE = "CommonBean_Scene";
     public static final String NAME_COMMONBEAN_GROUP = "CommonBean_Group";
     public static final String NAME_COMMONBEAN_OPERATE = "CommonBean_Operate";
+
+    public static final String NAME_ZHIHU = "zhihu";
 
 
     @Named(NAME_COMMONBEAN)
@@ -66,6 +72,14 @@ public class EntityModule {
     @Provides
     CommonBean.operate providerCommonBeanOperate() {
         return new CommonBean.operate();
+    }
+
+
+
+    @Named(NAME_ZHIHU)
+    @Provides
+    CommonHeaderEntity providerZhihuHeader() {
+        return new CommonHeaderEntity(ZhihuNewsEntity.StoriesEntity.HEADER_TITLE, HomeAdapterHelper.LEVEL_ZHIHU, ZhihuNewsEntity.StoriesEntity.HEADER_TITLE, ZhihuNewsEntity.StoriesEntity.HEADER_OPTIONS);
     }
 
 

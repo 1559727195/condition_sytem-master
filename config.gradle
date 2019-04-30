@@ -25,10 +25,11 @@ ext {
             androidx              : "1.0.0",
             lottie                : "2.5.4",
             permission            : "4.0.0",
-            MTRVA                 : "2.3.2-x",
+            MTRVA                 : "2.4.2",
             cardslideview         : "1.4.2",
             retrofit              : "2.3.0",
             gson                  : "2.8.2",
+            cookie                : "v1.0.1",
 
     ]
 
@@ -64,6 +65,7 @@ ext {
             retrofit                : "com.squareup.retrofit2:retrofit:${dependVersion.retrofit}",
             retrofitConverterGson   : "com.squareup.retrofit2:converter-gson:${dependVersion.retrofit}",
             retrofitAdapterRxjava   : "com.squareup.retrofit2:adapter-rxjava2:${dependVersion.retrofit}",
+            cookie                  : "com.github.franmontiel:PersistentCookieJar:${dependVersion.cookie}",
     ]
 
 
@@ -75,5 +77,14 @@ ext {
             arrow          : "com.fernandocejas:arrow:${dependVersion.arrowVersion}",
             MTRVA               : "com.crazysunj:multitypeadapter:${dependVersion.MTRVA}",
             gson           : "com.google.code.gson:gson:${dependVersion.gson}",
+            retrofit                : "com.squareup.retrofit2:retrofit:${dependVersion.retrofit}",
+            retrofitConverterGson   : "com.squareup.retrofit2:converter-gson:${dependVersion.retrofit}",
+            retrofitAdapterRxjava   : "com.squareup.retrofit2:adapter-rxjava2:${dependVersion.retrofit}",
+            dagger                  : "com.google.dagger:dagger:${dependVersion.dagger2}",
+            daggerCompiler          : "com.google.dagger:dagger-compiler:${dependVersion.dagger2}",
+            okhttp                  : "com.squareup.okhttp3:okhttp:${dependVersion.okhttp}",
+            okhttpLoggingInterceptor: "com.squareup.okhttp3:logging-interceptor:${dependVersion.okhttp}",
+            logger                  : "com.orhanobut:logger:${dependVersion.logger}",
+            cookie                  : "com.github.franmontiel:PersistentCookieJar:${dependVersion.cookie}",
     ]
 }

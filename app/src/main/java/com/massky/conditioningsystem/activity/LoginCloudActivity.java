@@ -114,7 +114,6 @@ public class LoginCloudActivity extends BaseActivity<BasePresenter> {
             usertext_id.setText(loginPhone);
         }
         init_ip();
-
     }
 
     private void init_ip() {
