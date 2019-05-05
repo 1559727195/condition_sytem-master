@@ -51,6 +51,7 @@ ext {
             permissionCompiler  : "com.github.hotchemi:permissionsdispatcher-processor:${dependVersion.permission}",
             MTRVA               : "com.crazysunj:multitypeadapter:${dependVersion.MTRVA}",
             cardslideview       : "com.crazysunj:cardslideview:${dependVersion.cardslideview}",
+            material            : "com.google.android.material:material:${dependVersion.androidx}",
     ]
 
     dataDependencies = [
@@ -86,5 +87,6 @@ ext {
             okhttpLoggingInterceptor: "com.squareup.okhttp3:logging-interceptor:${dependVersion.okhttp}",
             logger                  : "com.orhanobut:logger:${dependVersion.logger}",
             cookie                  : "com.github.franmontiel:PersistentCookieJar:${dependVersion.cookie}",
+            arrow          : "com.fernandocejas:arrow:${dependVersion.arrowVersion}",
     ]
 }

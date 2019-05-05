@@ -19,10 +19,10 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-
 import com.andview.refreshview.XRefreshView;
 import com.crazysunj.data.repository.weather.WeatherDataRepository;
 import com.crazysunj.domain.entity.repository.weather.WeatherRepository;
+import com.crazysunj.domain.entity.weather.WeatherXinZhiEntity;
 import com.crazysunj.domain.interactor.weather.WeatherUseCase;
 import com.massky.conditioningsystem.R;
 import com.massky.conditioningsystem.Util.DialogUtil;
@@ -52,6 +52,8 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import javax.inject.Inject;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import butterknife.InjectView;
 
 /**
@@ -73,6 +75,8 @@ public class HomeActivity extends BaseActivity<HomePresenter> implements Adapter
     TextView login_out;
     @InjectView(R.id.search_txt)
     TextView search_txt;
+    @InjectView(R.id.home_list)
+    RecyclerView mHomeList;
     private List<Map> deviceList = new ArrayList<>();
     private DetailDeviceHomeAdapter deviceListAdapter;
     private Dialog dialog1;
@@ -100,8 +104,6 @@ public class HomeActivity extends BaseActivity<HomePresenter> implements Adapter
     private String fuzzy_query = "";
     @Inject
     HomeAdapter mAdapter;
-    @Inject
-    WeatherUseCase weatherUseCase;
 
 
     @Override
@@ -132,6 +134,8 @@ public class HomeActivity extends BaseActivity<HomePresenter> implements Adapter
             }
         });
         intfirst_time = 1;
+        mHomeList.setLayoutManager(new LinearLayoutManager(this));
+        mHomeList.setAdapter(mAdapter);
     }
 
     @Override
@@ -208,16 +212,13 @@ public class HomeActivity extends BaseActivity<HomePresenter> implements Adapter
      * 执行删除动作
      */
     private void excute_delete_control() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (operate_list.size() == 0) {
-                    return;
-                }
-                CommonBean.operate operate = new CommonBean.operate();
-                operate.setId(operate_list.get(0).id);
-                operate.deleteList(operate);
+        new Thread(() -> {
+            if (operate_list.size() == 0) {
+                return;
             }
+            CommonBean.operate operate = new CommonBean.operate();
+            operate.setId(operate_list.get(0).id);
+            operate.deleteList(operate);
         }).start();
     }
 
@@ -226,6 +227,7 @@ public class HomeActivity extends BaseActivity<HomePresenter> implements Adapter
         init_ip();
         room_list_show_adapter();
         device_list_show_adapter();
+        mPresenter.getWeather("苏州");
     }
 
     @Override
@@ -283,20 +285,12 @@ public class HomeActivity extends BaseActivity<HomePresenter> implements Adapter
         dialog.getWindow().setAttributes(p);  //设置生效
         dialog.show();
 
-        cancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                login_out();
-                dialog.dismiss();
-            }
+        cancel.setOnClickListener(v -> {
+            login_out();
+            dialog.dismiss();
         });
 
-        confirm.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.dismiss();
-            }
-        });
+        confirm.setOnClickListener(v -> dialog.dismiss());
     }
 
     private void login_out() {
@@ -352,27 +346,24 @@ public class HomeActivity extends BaseActivity<HomePresenter> implements Adapter
      * 初始化设备点击事件
      */
     private void init_device_onclick() {
-        mDragGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                LinearLayout linear_select = (LinearLayout) view.findViewById(R.id.linear_select);
-                item_click_animal(view);
-                int[] location = new int[2];
-                view.getLocationInWindow(location); //获取在当前窗口内的绝对坐标
-                view.getLocationOnScreen(location);//获取在整个屏幕内的绝对坐标
-                item_click_position = position;
-                switch (current_dsc_position) {
-                    case 0:
-                        air_refresh_control(position, location);
-                        break;
-                    case 1://场景控制
-                        scene_control(position);
-                        break;
-                    case 2://分组控制
-                        dialogShow(group_list.get(position).type, group_list.get(position).id
-                                , group_list.get(position).name);
-                        break;
-                }
+        mDragGridView.setOnItemClickListener((parent, view, position, id) -> {
+            LinearLayout linear_select = (LinearLayout) view.findViewById(R.id.linear_select);
+            item_click_animal(view);
+            int[] location = new int[2];
+            view.getLocationInWindow(location); //获取在当前窗口内的绝对坐标
+            view.getLocationOnScreen(location);//获取在整个屏幕内的绝对坐标
+            item_click_position = position;
+            switch (current_dsc_position) {
+                case 0:
+                    air_refresh_control(position, location);
+                    break;
+                case 1://场景控制
+                    scene_control(position);
+                    break;
+                case 2://分组控制
+                    dialogShow(group_list.get(position).type, group_list.get(position).id
+                            , group_list.get(position).name);
+                    break;
             }
         });
         mDragGridView.setOnItemLongClickListener(this);
@@ -589,12 +580,9 @@ public class HomeActivity extends BaseActivity<HomePresenter> implements Adapter
     public void show_deviceList(final List<Map> controller_show_list, List<CommonBean.controller> controller_list) {
         this.controller_show_list = controller_show_list;
         this.controller_list = controller_list;
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                deviceListAdapter.setList(controller_show_list);
-                deviceListAdapter.notifyDataSetChanged();
-            }
+        runOnUiThread(() -> {
+            deviceListAdapter.setList(controller_show_list);
+            deviceListAdapter.notifyDataSetChanged();
         });
     }
 
@@ -608,12 +596,9 @@ public class HomeActivity extends BaseActivity<HomePresenter> implements Adapter
     public void show_sceneList(final List<Map> scene_show_list, List<CommonBean.scene> scene_list) {
         this.scene_show_list = scene_show_list;
         this.scene_list = scene_list;
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                deviceListAdapter.setList(scene_show_list);
-                deviceListAdapter.notifyDataSetChanged();
-            }
+        runOnUiThread(() -> {
+            deviceListAdapter.setList(scene_show_list);
+            deviceListAdapter.notifyDataSetChanged();
         });
     }
 
@@ -627,12 +612,9 @@ public class HomeActivity extends BaseActivity<HomePresenter> implements Adapter
     public void show_groupList(final List<Map> group_show_list, List<CommonBean.group> group_list) {
         this.group_show_list = group_show_list;
         this.group_list = group_list;
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                deviceListAdapter.setList(group_show_list);
-                deviceListAdapter.notifyDataSetChanged();
-            }
+        runOnUiThread(() -> {
+            deviceListAdapter.setList(group_show_list);
+            deviceListAdapter.notifyDataSetChanged();
         });
     }
 
@@ -657,12 +639,7 @@ public class HomeActivity extends BaseActivity<HomePresenter> implements Adapter
     @Override
     public void show_operateStatus(List<CommonBean.operate> operate_list) {
         this.operate_list = operate_list;
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                on_control_scuess();
-            }
-        });
+        runOnUiThread(() -> on_control_scuess());
         get_list(fuzzy_query);//控制完后重新获取设备列表
     }
 
@@ -674,13 +651,10 @@ public class HomeActivity extends BaseActivity<HomePresenter> implements Adapter
     @Override
     public void show_detailcontrolList(List<CommonBean.GroupDetail> group_detail_list) {
         this.group_detail_list = group_detail_list;
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (view_long_click != null)
-                    item_click_animal(view_long_click);
-                showCenterSceneDialog(group_list.get(group_list_long_click_position).name, "", null);
-            }
+        runOnUiThread(() -> {
+            if (view_long_click != null)
+                item_click_animal(view_long_click);
+            showCenterSceneDialog(group_list.get(group_list_long_click_position).name, "", null);
         });
     }
 
@@ -691,20 +665,19 @@ public class HomeActivity extends BaseActivity<HomePresenter> implements Adapter
      */
     @Override
     public void scene_detail_show_list(final List<Map> scene_detail_show_list) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (view_long_click != null)
-                    item_click_animal(view_long_click);
-                new SceneDialog(HomeActivity.this, R.style.BottomDialog, scene_detail_show_list, scene_list.get(scene_list_long_click_position)
-                        .name, new SceneDialog.OnCloseListener() {
-                    @Override
-                    public void onClick(String action) {
+        runOnUiThread(() -> {
+            if (view_long_click != null)
+                item_click_animal(view_long_click);
+            new SceneDialog(HomeActivity.this, R.style.BottomDialog, scene_detail_show_list, scene_list.get(scene_list_long_click_position)
+                    .name, action -> {
 
-                    }
-                }).setTitle("").show();
-            }
+                    }).setTitle("").show();
         });
+    }
+
+    @Override
+    public void showWeather(WeatherXinZhiEntity.FinalEntity weatherEntity) {
+
     }
 
 
@@ -824,54 +797,36 @@ public class HomeActivity extends BaseActivity<HomePresenter> implements Adapter
                                  CheckBox tv_upper, ImageView btn_guanbi,
                                  final int[] tempture, final String[] modeflag,
                                  final String[] power, final String[] wind, final int status) {
-        btn_guanbi.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog1.dismiss();
-            }
+        btn_guanbi.setOnClickListener(view -> dialog1.dismiss());
+
+        temp_add.setOnClickListener(view -> {//温度加
+            time_end();
+            temp_add(power[0], tempture, tempture_txt, controller, status);
         });
 
-        temp_add.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {//温度加
+        //温度减
+        temp_del.setOnClickListener(view -> {
+            time_end();
+            temp_del(power[0], tempture, tempture_txt, controller, status);
+        });
+
+        rel_moshi.setOnClickListener(view -> {
+            time_end();
+            mode_control(power[0], modeflag, controller, mode_txt, status);
+        });
+
+        rel_fengsu.setOnClickListener(view -> {
+
+            time_end();
+            speed_control(power[0], wind, controller, speed_txt, status);
+        });
+
+        tv_upper.setOnCheckedChangeListener((compoundButton, b) -> {
+            if (!popcheck_init) {
                 time_end();
-                temp_add(power[0], tempture, tempture_txt, controller, status);
-            }
-        });
-
-        temp_del.setOnClickListener(new View.OnClickListener() {//温度减
-            @Override
-            public void onClick(View view) {
-                time_end();
-                temp_del(power[0], tempture, tempture_txt, controller, status);
-            }
-        });
-
-        rel_moshi.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                time_end();
-                mode_control(power[0], modeflag, controller, mode_txt, status);
-            }
-        });
-
-        rel_fengsu.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                time_end();
-                speed_control(power[0], wind, controller, speed_txt, status);
-            }
-        });
-
-        tv_upper.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if (!popcheck_init) {
-                    time_end();
-                    power_control(b, power, controller, status);
-                } else {
-                    popcheck_init = false;
-                }
+                power_control(b, power, controller, status);
+            } else {
+                popcheck_init = false;
             }
         });
     }
@@ -1328,24 +1283,16 @@ public class HomeActivity extends BaseActivity<HomePresenter> implements Adapter
         dialog.show();
 
 
-        confirm.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.dismiss();
-            }
-        });
+        confirm.setOnClickListener(v -> dialog.dismiss());
 
-        cancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (edit_password_gateway.getText().toString().trim().equals("")) {
-                    ToastUtil.showToast(HomeActivity.this, "查询条件为空");
-                    return;
-                }
-                fuzzy_query = SqlHelper.sqlencode(edit_password_gateway.getText().toString().trim());
-                get_list(fuzzy_query);
-                dialog.dismiss();
+        cancel.setOnClickListener(v -> {
+            if (edit_password_gateway.getText().toString().trim().equals("")) {
+                ToastUtil.showToast(HomeActivity.this, "查询条件为空");
+                return;
             }
+            fuzzy_query = SqlHelper.sqlencode(edit_password_gateway.getText().toString().trim());
+            get_list(fuzzy_query);
+            dialog.dismiss();
         });
     }
 }

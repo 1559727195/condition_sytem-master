@@ -15,7 +15,10 @@
  */
 package com.massky.conditioningsystem.presenter;
 
+import com.crazysunj.domain.entity.weather.WeatherXinZhiEntity;
+import com.crazysunj.domain.interactor.weather.WeatherUseCase;
 import com.massky.conditioningsystem.base.BasePresenter;
+import com.massky.conditioningsystem.base.BaseSubscriber;
 import com.massky.conditioningsystem.di.scope.ActivityScope;
 import com.massky.conditioningsystem.get.GetCommonCount;
 import com.massky.conditioningsystem.get.GetDeviceList;
@@ -24,8 +27,10 @@ import com.massky.conditioningsystem.get.GetOperateId;
 import com.massky.conditioningsystem.get.GetSceneList;
 import com.massky.conditioningsystem.presenter.contract.HomeContract;
 import com.massky.conditioningsystem.sql.CommonBean;
+
 import java.util.List;
 import java.util.Map;
+
 import javax.inject.Inject;
 
 
@@ -42,99 +47,87 @@ public class HomePresenter extends BasePresenter<HomeContract.View> implements H
     private GetSceneList getSceneList;
     private GetGroupList getGroupList;
     private GetOperateId getOperateId;
+    private WeatherUseCase mWeatherUseCase;
 
     @Inject
-    HomePresenter(GetCommonCount getCommonCount, GetDeviceList getDeviceList, GetSceneList getSceneList
+    HomePresenter(WeatherUseCase weatherUseCase, GetCommonCount getCommonCount, GetDeviceList getDeviceList, GetSceneList getSceneList
             , GetGroupList getGroupList, GetOperateId getOperateId) {
         this.getCommonCount = getCommonCount;
         this.getDeviceList = getDeviceList;
         this.getSceneList = getSceneList;
         this.getGroupList = getGroupList;
         this.getOperateId = getOperateId;
+        this.mWeatherUseCase = weatherUseCase;
     }
 
     @Override
     public void getSqlCounts() {
-        getCommonCount.sqlCounts(new GetCommonCount.Onresponse() {
-            @Override
-            public void onresult(List<Map> list) {
+        getCommonCount.sqlCounts(list->{
                 if (mView != null)
                     mView.showsqlCounts(list);
-            }
         });
     }
 
     @Override
     public void show_deviceList(String trim) {
-        getDeviceList.show_deviceList(trim, new GetDeviceList.Onresponse() {
-            @Override
-            public void onresult(List<Map> controller_show_list, List<CommonBean.controller> controller_list) {
-                if (mView != null)
-                    mView.show_deviceList(controller_show_list, controller_list);
-            }
+        getDeviceList.show_deviceList(trim, (controller_show_list, controller_list) -> {
+            if (mView != null)
+                mView.show_deviceList(controller_show_list, controller_list);
         });
     }
 
     @Override
     public void show_sceneList(String trim) {
-        getSceneList.show_sceneList(trim, new GetSceneList.Onresponse() {
-
-            @Override
-            public void onresult(List<Map> scene_show_list, List<CommonBean.scene> scene_list) {
-                if (mView != null)
-                    mView.show_sceneList(scene_show_list, scene_list);
-            }
+        getSceneList.show_sceneList(trim, (scene_show_list, scene_list) -> {
+            if (mView != null)
+                mView.show_sceneList(scene_show_list, scene_list);
         });
     }
 
     @Override
     public void show_controlList(String trim) {
-        getGroupList.show_groupList(trim, new GetGroupList.Onresponse() {
-            @Override
-            public void onresult(List<Map> group_show_list, List<CommonBean.group> group_list) {
-                if (mView != null)
-                    mView.show_groupList(group_show_list, group_list);
-            }
+        getGroupList.show_groupList(trim, (group_show_list, group_list) -> {
+            if (mView != null)
+                mView.show_groupList(group_show_list, group_list);
         });
     }
 
     @Override
     public void show_control_device(String sql, CommonBean.operate operate, String selectMaxId) {
-        getOperateId.show_operateId(new GetOperateId.Onresponse() {
-
-            @Override
-            public void onresult(long operate_max_id) {
-                mView.show_operate_max_id(operate_max_id);
-            }
-        }, sql, operate, selectMaxId);
+        getOperateId.show_operateId(operate_max_id -> mView.show_operate_max_id(operate_max_id), sql, operate, selectMaxId);
     }
 
     @Override
     public void show_operateStatus(long operate_max_id) {
-        getOperateId.show_operateStatus(operate_max_id, new GetOperateId.Onresponse_1() {
-            @Override
-            public void onresult(List<CommonBean.operate> operate_list) {
-                mView.show_operateStatus(operate_list);
-            }
-        });
+        getOperateId.show_operateStatus(operate_max_id, operate_list -> mView.show_operateStatus(operate_list));
     }
 
     @Override
     public void show_detailcontrolList(int groupId, String name) {
-        getGroupList.show_detailcontrolList(groupId, name, new GetGroupList.Onresponse_1() {
-            @Override
-            public void onresult(List<CommonBean.GroupDetail> group_detail_list) {
-                mView.show_detailcontrolList(group_detail_list);
-            }
-        });
+        getGroupList.show_detailcontrolList(groupId, name, group_detail_list -> mView.show_detailcontrolList(group_detail_list));
     }
 
     @Override
     public void show_scenecontroller(int id) {
-        getSceneList.show_scenecontroller(id, new GetSceneList.Onresponse_1() {
+        getSceneList.show_scenecontroller(id, scene_detail_show_list -> mView.scene_detail_show_list(scene_detail_show_list));
+    }
+
+    @Override
+    public void getWeather(String location) {
+        mWeatherUseCase.execute(WeatherUseCase.Params.get(location),new BaseSubscriber<WeatherXinZhiEntity.FinalEntity>() {
             @Override
-            public void onresult(List<Map> scene_detail_show_list) {
-                mView.scene_detail_show_list(scene_detail_show_list);
+            public void onNext(WeatherXinZhiEntity.FinalEntity weatherEntity) {
+                if (mView != null) {
+                    mView.showWeather(weatherEntity);
+                }
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                super.onError(e);
+                if (mView != null) {
+                    mView.showError(e.getMessage());
+                }
             }
         });
     }

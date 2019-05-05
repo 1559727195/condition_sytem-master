@@ -21,6 +21,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    compileOptions {
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
+    }
 
 }
 
@@ -40,5 +44,6 @@ dependencies {
     implementation libs.logger
     implementation libs.rxjava
     implementation libs.rxandroid
+    implementation libs.arrow
 
 }

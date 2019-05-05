@@ -15,6 +15,7 @@
  */
 package com.massky.conditioningsystem.presenter.contract;
 
+import com.crazysunj.domain.entity.weather.WeatherXinZhiEntity;
 import com.massky.conditioningsystem.base.IPresenter;
 import com.massky.conditioningsystem.base.IView;
 import com.massky.conditioningsystem.sql.CommonBean;
@@ -45,6 +46,8 @@ public interface HomeContract {
         void show_detailcontrolList(List<CommonBean.GroupDetail> group_detail_list);
 
         void scene_detail_show_list(List<Map> scene_detail_show_list);
+
+        void showWeather(WeatherXinZhiEntity.FinalEntity weatherEntity);
     }
 
     interface Presenter extends IPresenter<View> {
@@ -63,5 +66,7 @@ public interface HomeContract {
         void show_detailcontrolList(final int groupId, final String name);
 
         void show_scenecontroller(int id);
+
+        void getWeather(String location);
     }
 }

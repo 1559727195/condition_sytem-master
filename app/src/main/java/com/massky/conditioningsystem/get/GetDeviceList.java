@@ -36,38 +36,26 @@ public class GetDeviceList {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                List<CommonBean.controller> controller_list = new ArrayList<>();
+                List<CommonBean.controller> controller_list;
                 switch (trim) {
                     case "":
-                        controller_list = controller.queryList(controller, new BaseDao.onresponse() {
-
-                            @Override
-                            public void onresponse(final String content) {
-                                context.runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Message message = Message.obtain();
-                                        message.obj = content;
-                                        message.what = 0;
-                                        handler.sendMessage(message);
-                                    }
-                                });
-                            }
-                        });
+                        controller_list = controller.queryList(controller, content -> context.runOnUiThread(() -> {
+                            Message message = Message.obtain();
+                            message.obj = content;
+                            message.what = 0;
+                            handler.sendMessage(message);
+                        }));
                         break;
                     default:
                         controller_list = controller.querySqlList(controller, SqlHelper.sqlcontorller_mohu + "'%" + trim + "%'", new BaseDao.onresponse() {
 
                             @Override
                             public void onresponse(final String content) {
-                                context.runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Message message = Message.obtain();
-                                        message.obj = content;
-                                        message.what = 0;
-                                        handler.sendMessage(message);
-                                    }
+                                context.runOnUiThread(() -> {
+                                    Message message = Message.obtain();
+                                    message.obj = content;
+                                    message.what = 0;
+                                    handler.sendMessage(message);
                                 });
                             }
                         });
@@ -76,22 +64,13 @@ public class GetDeviceList {
 
 
                 if (controller_list.size() == 0) {
-                    context.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
+                    context.runOnUiThread(() -> context.runOnUiThread(() -> {
 
-                            context.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-
-                                    if (!iswifi) {
-                                        ToastUtil.showToast(context, "设备列表为空");
-                                        iswifi = false;
-                                    }
-                                }
-                            });
+                        if (!iswifi) {
+                            ToastUtil.showToast(context, "设备列表为空");
+                            iswifi = false;
                         }
-                    });
+                    }));
                 } else {
                     List<Map> controller_show_list = getMaps(controller_list);
                     onresponse.onresult(controller_show_list, controller_list);
